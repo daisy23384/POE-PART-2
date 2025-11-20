@@ -1,11 +1,13 @@
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/UnitTests/EmptyTestNGTest.java to edit this template
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
+
 package com.mycompany.logandregchat;
 
-import static org.testng.Assert.*;
+import java.util.List;
 import org.testng.annotations.Test;
+import static org.testng.Assert.*;
 
 /**
  * Test class for Message
@@ -16,107 +18,212 @@ public class MessageNGTest {
     public MessageNGTest() {}
 
     /**
-     * Test of checkRecipientNumber method, of class Message.
+     * Test checkRecipientNumber()
      */
     @Test
     public void testCheckRecipientNumber() {
-        System.out.println("Testing checkRecipientNumber()");
+        System.out.println("Testing checkRecipientNumber");
 
-        // ✅ Valid recipient number
-        Message validMsg = new Message("+27831234567", "Hello");
-        assertTrue(validMsg.checkRecipientNumber(),
-                "Valid recipient number should return true");
+        Message valid = new Message("+27831234567", "Hello");
+        assertTrue(valid.checkRecipientNumber(), "Valid number should return true");
 
-        // 🚫 Missing '+'
         Message noPlus = new Message("27831234567", "Hello");
-        assertFalse(noPlus.checkRecipientNumber(),
-                "Recipient without '+' should return false");
+        assertFalse(noPlus.checkRecipientNumber(), "Missing + must fail");
 
-        // 🚫 Too long
+        Message tooShort = new Message("+27", "Hello");
+        assertFalse(tooShort.checkRecipientNumber(), "Too short number must fail");
+
         Message tooLong = new Message("+2783123456789", "Hello");
-        assertFalse(tooLong.checkRecipientNumber(),
-                "Recipient number longer than 12 characters should return false");
-
-        // 🚫 Too short
-        Message tooShort = new Message("+271", "Hello");
-        assertFalse(tooShort.checkRecipientNumber(),
-                "Recipient number shorter than 10 characters should return false");
+        assertFalse(tooLong.checkRecipientNumber(), "Too long number must fail");
     }
 
     /**
-     * Test of checkMessageLength method, of class Message.
+     * Test checkMessageLength()
      */
     @Test
     public void testCheckMessageLength() {
-        System.out.println("Testing checkMessageLength()");
+        System.out.println("Testing checkMessageLength");
 
-        // ✅ Valid message (under 250 chars)
-        Message shortMsg = new Message("+27831234567", "This is a short test message.");
-        assertTrue(shortMsg.checkMessageLength(),
-                "Short message should return true");
+        Message shortMsg = new Message("+27831234567", "Short message");
+        assertTrue(shortMsg.checkMessageLength(), "Valid message length should pass");
 
-        // 🚫 Message too long (over 250 chars)
-        StringBuilder longText = new StringBuilder();
-        for (int i = 0; i < 260; i++) {
-            longText.append("a");
-        }
-        Message longMsg = new Message("+27831234567", longText.toString());
-        assertFalse(longMsg.checkMessageLength(),
-                "Message longer than 250 characters should return false");
+        String longText = "a".repeat(260);
+        Message longMsg = new Message("+27831234567", longText);
+        assertFalse(longMsg.checkMessageLength(), "Over 250 chars should fail");
 
-        // 🚫 Null message
         Message nullMsg = new Message("+27831234567", null);
-        assertFalse(nullMsg.checkMessageLength(),
-                "Null message should return false");
+        assertFalse(nullMsg.checkMessageLength(), "Null message should fail");
     }
 
     /**
-     * Test of createMessageHash method, of class Message.
+     * Test createMessageHash()
      */
     @Test
     public void testCreateMessageHash() {
-        System.out.println("Testing createMessageHash()");
+        System.out.println("Testing createMessageHash");
 
-        // ✅ Valid message
-        Message msg = new Message("+27831234567", "Do you think thanks");
-        String hash = msg.createMessageHash();
+        Message m = new Message("+27831234567", "Do you think thanks");
+        String hash = m.createMessageHash();
 
-        // The hash should have structure like "DO:<id>:DO_THANKS"
-        assertTrue(hash.startsWith("DO:"), "Hash should start with the message prefix (first two letters)");
-        assertTrue(hash.contains(":DO_THANKS"), "Hash should contain first and last words in uppercase");
+        assertTrue(hash.startsWith("DO:"), "Prefix should be first 2 letters in uppercase");
+        assertTrue(hash.contains("DO_THANKS"), "Should contain FIRST_LAST words");
 
-        // 🚫 Empty message
-        Message emptyMsg = new Message("+27831234567", "");
-        assertEquals(emptyMsg.createMessageHash(), "",
-                "Empty message should return empty hash");
+        Message empty = new Message("+27831234567", "");
+        assertEquals(empty.createMessageHash(), "", "Empty message returns empty hash");
 
-        // 🚫 Null message
         Message nullMsg = new Message("+27831234567", null);
-        assertEquals(nullMsg.createMessageHash(), "",
-                "Null message should return empty hash");
+        assertEquals(nullMsg.createMessageHash(), "", "Null message returns empty hash");
     }
 
     /**
-     * Test of sendMessage method, of class Message.
+     * Test sendMessage()
      */
     @Test
     public void testSendMessage() {
-        System.out.println("Testing sendMessage()");
+        System.out.println("Testing sendMessage");
 
-        // ✅ Valid message and number
-        Message valid = new Message("+27831234567", "Test");
+        Message.sentMessages.clear();
+        Message.messageHashes.clear();
+        Message.messageIds.clear();
+        Message.recipients.clear();
+
+        Message valid = new Message("+27831234567", "Hello!");
         assertEquals(valid.sendMessage(), "Message successfully sent!");
 
-        // 🚫 Invalid recipient number
-        Message invalidRecipient = new Message("27831234567", "Test");
-        assertEquals(invalidRecipient.sendMessage(), "Invalid recipient number format.");
+        Message badRecipient = new Message("27831234567", "Hello");
+        assertEquals(badRecipient.sendMessage(), "Invalid recipient number format.");
 
-        // 🚫 Too long message
-        StringBuilder longText = new StringBuilder();
-        for (int i = 0; i < 260; i++) {
-            longText.append("a");
-        }
-        Message longMsg = new Message("+27831234567", longText.toString());
+        Message longMsg = new Message("+27831234567", "a".repeat(260));
         assertEquals(longMsg.sendMessage(), "Please enter a message of less than 250 characters.");
+    }
+
+    /**
+     * Test disregardMessage()
+     */
+    @Test
+    public void testDisregardMessage() {
+        System.out.println("Testing disregardMessage");
+
+        Message.disregardedMessages.clear();
+        Message.messageHashes.clear();
+
+        Message m = new Message("+27831234567", "Ignore this");
+        m.disregardMessage();
+
+        assertEquals(m.getFlag(), "Disregarded");
+        assertEquals(Message.disregardedMessages.size(), 1);
+        assertTrue(Message.messageHashes.contains(m.getMessageHashValue()));
+    }
+
+    /**
+     * Test storeMessage()
+     */
+    @Test
+    public void testStoreMessage() {
+        System.out.println("Testing storeMessage");
+
+        Message.storedMessages.clear();
+        Message.messageHashes.clear();
+
+        Message m = new Message("+27831234567", "Store this");
+        m.storeMessage();
+
+        assertEquals(m.getFlag(), "Stored");
+        assertEquals(Message.storedMessages.size(), 1);
+        assertTrue(Message.messageHashes.contains(m.getMessageHashValue()));
+    }
+
+    /**
+     * Test populateTestData()
+     */
+    @Test
+    public void testPopulateTestData() {
+        System.out.println("Testing populateTestData");
+
+        Message.populateTestData();
+
+        assertEquals(Message.sentMessages.size(), 2);
+        assertEquals(Message.storedMessages.size(), 2);
+        assertEquals(Message.disregardedMessages.size(), 1);
+        assertEquals(Message.messageHashes.size(), 5);
+        assertEquals(Message.recipients.size(), 5);
+    }
+
+    /**
+     * Test searchByMessageId()
+     */
+    @Test
+    public void testSearchByMessageId() {
+        System.out.println("Testing searchByMessageId");
+
+        Message.populateTestData();
+
+        String id = Message.sentMessages.get(0).getMessageId();
+        Message found = Message.searchByMessageId(id);
+
+        assertNotNull(found, "Message must be found");
+        assertEquals(found.getMessageId(), id);
+    }
+
+    /**
+     * Test searchByRecipient()
+     */
+    @Test
+    public void testSearchByRecipient() {
+        System.out.println("Testing searchByRecipient");
+
+        Message.populateTestData();
+
+        String recipient = Message.storedMessages.get(0).getRecipient();
+        List<Message> result = Message.searchByRecipient(recipient);
+
+        assertFalse(result.isEmpty(), "Should find messages");
+        assertEquals(result.get(0).getRecipient(), recipient);
+    }
+
+    /**
+     * Test deleteMessageByHash()
+     */
+    @Test
+    public void testDeleteMessageByHash() {
+        System.out.println("Testing deleteMessageByHash");
+
+        Message.populateTestData();
+
+        String hash = Message.sentMessages.get(0).getMessageHashValue();
+
+        boolean deleted = Message.deleteMessageByHash(hash);
+        assertTrue(deleted, "Delete must return true");
+        assertFalse(Message.messageHashes.contains(hash));
+    }
+
+    /**
+     * Test getLongestMessageAcrossAll()
+     */
+    @Test
+    public void testGetLongestMessageAcrossAll() {
+        System.out.println("Testing getLongestMessageAcrossAll");
+
+        Message.populateTestData();
+
+        String longest = Message.getLongestMessageAcrossAll();
+
+        assertTrue(longest.contains("late"), "Longest message should be the long stored one");
+    }
+
+    /**
+     * Test displayFullReportOfSentMessages()
+     */
+    @Test
+    public void testDisplayFullReportOfSentMessages() {
+        System.out.println("Testing displayFullReportOfSentMessages");
+
+        Message.populateTestData();
+
+        String report = Message.displayFullReportOfSentMessages();
+
+        assertTrue(report.contains("Sent Messages Report"));
+        assertTrue(report.contains("Recipient"));
+        assertTrue(report.contains("Message ID"));
     }
 }

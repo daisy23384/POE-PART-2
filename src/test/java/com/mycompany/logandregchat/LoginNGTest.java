@@ -13,11 +13,10 @@ import org.testng.annotations.Test;
  */
 public class LoginNGTest {
 
-    // Create an instance of the Login class (capital L)
+    // Create an instance of the Login class
     Login login = new Login();
 
-    public LoginNGTest() {
-    }
+    public LoginNGTest() {}
 
     /**
      * Test of loginUser method, of class Login.
@@ -29,15 +28,15 @@ public class LoginNGTest {
         String storedUser = "ky_1";
         String storedPass = "Pass@123";
 
-        // ✅ Test Case 1: Correct username and password
+        // Valid login
         assertTrue(login.loginUser("ky_1", "Pass@123", storedUser, storedPass),
                 "Correct username and password should return true");
 
-        // ✅ Test Case 2: Wrong username
+        // Wrong username
         assertFalse(login.loginUser("wrong", "Pass@123", storedUser, storedPass),
                 "Wrong username should return false");
 
-        // ✅ Test Case 3: Wrong password
+        // Wrong password
         assertFalse(login.loginUser("ky_1", "WrongPass", storedUser, storedPass),
                 "Wrong password should return false");
     }
@@ -52,12 +51,12 @@ public class LoginNGTest {
         String firstName = "Kyle";
         String lastName = "Smith";
 
-        // ✅ Test Case 1: Successful login
+        // Successful login message
         String successMsg = login.returnLoginStatus(true, firstName, lastName);
         assertEquals(successMsg, "Welcome Kyle Smith, it is great to see you again.",
                 "Success message should match expected output");
 
-        // ✅ Test Case 2: Failed login
+        // Failed login message
         String failMsg = login.returnLoginStatus(false, firstName, lastName);
         assertEquals(failMsg, "Username or password incorrect, please try again.",
                 "Failure message should match expected output");
